@@ -1,9 +1,8 @@
-// //-----------------------------------------------------
-// // Design Name : ram_sp_sr_sw
-// // File Name   : ram_sp_sr_sw.v
-// // Function    : Synchronous read write RAM 
-// // Coder       : Deepak Kumar Tala
-// //-----------------------------------------------------
+ //-----------------------------------------------------
+// Design Name : RAM_SP_SR_RW
+// File Name  : RAM_SP_SR_RW.v
+// Function  : Single port Synchronous read and write RAM
+//-----------------------------------------------------
 module ram_sp_sr_sw (
 clk         , // Clock Input
 address     , // Address Input
