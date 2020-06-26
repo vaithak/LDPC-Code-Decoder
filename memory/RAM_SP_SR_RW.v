@@ -1,47 +1,50 @@
- //-----------------------------------------------------
-// Design Name : RAM_SP_SR_RW
-// File Name  : RAM_SP_SR_RW.v
-// Function  : Single port Synchronous read and write RAM
 //-----------------------------------------------------
-module ram_sp_sr_sw (
-clk         , // Clock Input
-address     , // Address Input
-data        , // Data bi-directional
-cs          , // Chip Select
-we          , // Write Enable/Read Enable
-oe            // Output Enable
-); 
-
-parameter DATA_WIDTH = 8 ;
-parameter ADDR_WIDTH = 8 ;
-parameter RAM_DEPTH = 1 << ADDR_WIDTH;
+// Design Name : RAM_SP_SR_RW
+// File Name   : RAM_SP_SR_RW.v
+// Function    : Single port Synchronous read and write RAM
+//-----------------------------------------------------
+module RAM_SP_SR_RW #(
+    parameter DATA_WIDTH = 8,
+    parameter ADDR_WIDTH = 8,
+    parameter RAM_DEPTH  = 1 << ADDR_WIDTH
+)
+(
+    clk      , // Clock Input
+    address  , // Address Input
+    data_in  , // Data Input
+    data_out , // Data Output
+    we       , // Write Enable
+    cs       , // Chip select
+);
 
 //--------------Input Ports----------------------- 
-input                  clk         ;
-input [ADDR_WIDTH-1:0] address     ;
-input                  cs          ;
-input                  we          ;
-input                  oe          ; 
+input                  clk      ;
+input                  cs       ;
+input [ADDR_WIDTH-1:0] address  ;
+input                  we       ; 
+input [DATA_WIDTH-1:0] data_in  ;
 
-//--------------Inout Ports----------------------- 
-inout [DATA_WIDTH-1:0]  data       ;
+//--------------Output ports----------------------
+output [DATA_WIDTH-1:0] data_out;
 
 //--------------Internal variables---------------- 
 reg [DATA_WIDTH-1:0] data_out ;
 reg [DATA_WIDTH-1:0] mem [0:RAM_DEPTH-1];
-reg                  oe_r;
 
 //--------------Code Starts Here------------------ 
 
-// Tri-State Buffer control 
-// output : When we = 0, oe = 1, cs = 1
-assign data = (cs && oe && !we) ? data_out : 8'bz; 
-
 // Memory Write Block 
-// Write Operation : When we = 1, cs = 1
-always @ (posedge clk)
-begin : MEM_WRITE
-   if ( cs && we ) begin
-       mem[address] = data;
-   end
+always @ (posedge clk) begin
+    if (cs && we) begin
+        mem[address] <= data_in;
+    end
 end
+
+// Memory Read Block 
+always @ (posedge clk) begin
+    if (cs && !we) begin
+        data_out <= mem[address];
+    end
+end
+
+endmodule
