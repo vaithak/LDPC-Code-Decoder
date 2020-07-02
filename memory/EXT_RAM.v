@@ -3,10 +3,11 @@
 // File Name   : EXT_RAM.v
 // Function    : Implementation of EXT_RAM
 //-----------------------------------------------------
-module RAM_SP_SR_RW #(
-    parameter DATA_WIDTH = 8 ;
-    parameter ADDR_WIDTH = 8 ;
-    parameter RAM_DEPTH  = 1 << ADDR_WIDTH;
+
+module EXT_RAM #(
+    parameter DATA_WIDTH = 8 ,
+    parameter ADDR_WIDTH = 8 ,
+    parameter RAM_DEPTH  = 1 << ADDR_WIDTH
 )
 (
     clk      , // Clock Input
@@ -17,34 +18,24 @@ module RAM_SP_SR_RW #(
     cs       , // Chip select
 );
 
-//--------------Input Ports----------------------- 
+//--------------Input Ports-----------------------
 input                  clk      ;
 input                  cs       ;
 input [ADDR_WIDTH-1:0] address  ;
-input                  we       ; 
+input                  we       ;
 input [DATA_WIDTH-1:0] data_in  ;
 
 //--------------Output ports----------------------
 output [DATA_WIDTH-1:0] data_out;
 
-//--------------Internal variables---------------- 
-reg [DATA_WIDTH-1:0] data_out ;
-reg [DATA_WIDTH-1:0] mem [0:RAM_DEPTH-1];
-
-//--------------Code Starts Here------------------ 
-
-// Memory Write Block 
-always @ (posedge clk) begin
-    if (cs && we) begin
-        mem[address] <= data_in;
-    end
-end
-
-// Memory Read Block 
-always @ (posedge clk) begin
-    if (cs && !we) begin
-        data_out <= mem[address];
-    end
-end
+// Use generic RAM module
+RAM_SP_SR_RW #(DATA_WIDTH, ADDR_WIDTH, RAM_DEPTH) ram (
+    .clk(clk),
+    .address(address),
+    .data_in(data_in),
+    .we(we),
+    .data_out(data_out),
+    .cs(cs)
+);
 
 endmodule
