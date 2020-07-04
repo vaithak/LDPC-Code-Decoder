@@ -1,5 +1,4 @@
-`include "EXT_RAM.v"  //including the module file to be instantiated
-`include "RAM_SP_SR_RW.v"
+  //including the module file to be instantiated
 module EXT_RAM_test #
 (
   parameter DATA_WIDTH = 8,
