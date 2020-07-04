@@ -1,7 +1,7 @@
 // Convert number from Signed format to Two's complement
 
 module S_to_T #(
-  parameter DATA_WIDTH = 6
+  parameter DATA_WIDTH = 5
 ) 
 (
   input wire  [DATA_WIDTH - 1 : 0] inp,
