@@ -1,50 +1,31 @@
-//-----------------------------------------------------
-// Design Name : RAM_SP_SR_RW
-// File Name   : RAM_SP_SR_RW.v
-// Function    : Single port Synchronous read and write RAM
-//-----------------------------------------------------
-module RAM_SP_SR_RW #(
-    parameter DATA_WIDTH = 8,
-    parameter ADDR_WIDTH = 8,
-    parameter RAM_DEPTH  = 1 << ADDR_WIDTH
-)
-(
-    clk      , // Clock Input
-    address  , // Address Input
-    data_in  , // Data Input
-    data_out , // Data Output
-    we       , // Write Enable
-    cs       , // Chip select
-);
 
-//--------------Input Ports----------------------- 
-input                  clk      ;
-input                  cs       ;
-input [ADDR_WIDTH-1:0] address  ;
-input                  we       ; 
-input [DATA_WIDTH-1:0] data_in  ;
-
-//--------------Output ports----------------------
-output [DATA_WIDTH-1:0] data_out;
-
-//--------------Internal variables---------------- 
-reg [DATA_WIDTH-1:0] data_out ;
-reg [DATA_WIDTH-1:0] mem [0:RAM_DEPTH-1];
-
-//--------------Code Starts Here------------------ 
-
-// Memory Write Block 
-always @ (posedge clk) begin
-    if (cs && we) begin
-        mem[address] <= data_in;
-    end
-end
-
-// Memory Read Block 
-always @ (posedge clk) begin
-    if (cs && !we) begin
-        data_out <= mem[address];
-    end
-end
-
+module single_port_sync_ram 
+  # (parameter ADDR_WIDTH = 4,
+     parameter DATA_WIDTH = 32,
+     parameter DEPTH = 16 
+    )
+  
+  ( 	input 					clk,
+   		input [ADDR_WIDTH-1:0]	addr,
+   		inout [DATA_WIDTH-1:0]	data,
+   		input 					cs,
+   		input 					we,
+   		input 					oe
+  );
+  
+  reg [DATA_WIDTH-1:0] 	tmp_data;
+  reg [DATA_WIDTH-1:0] 	mem [DEPTH:0];
+  
+  always @ (posedge clk) begin
+    if (cs & we)
+      mem[addr] <= data;
+  end
+  
+  always @ (posedge clk) begin
+    if (cs & !we)
+    	tmp_data <= mem[addr];
+  end
+  
+  assign data = cs & oe & !we ? tmp_data : 'hz;
 endmodule
+  
