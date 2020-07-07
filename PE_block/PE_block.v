@@ -32,4 +32,7 @@ module PE_BLOCK
   input  logic [MESSAGE_WIDTH-1:0] int_in,            //intrinsic message input from previous block
   output logic [MESSAGE_WIDTH-1:0] int_out,           //intrinsic message output to next block
   input  logic [MESSAGE_WIDTH-1:0] cnu_data_in [0:2], //input extrinsic messages from CNU
+  output logic [MESSAGE_WIDTH:0]   cnu_data_out [0:2] //output extrinsic messages to CNU
 );
+
+endmodule : PE_BLOCK
