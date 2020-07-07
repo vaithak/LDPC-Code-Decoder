@@ -7,6 +7,9 @@ module CNU (
   // Input clock signal
   input clk,
 
+  // Enable port
+  input en,
+
   // 6 output 5-bit data to send to PE blocks
   output [5-1 : 0] Y [0 : 6-1],
   
@@ -59,20 +62,22 @@ LUT lut_6(.X(sum_regs[9]), .Y(Y[5][3:0]));
 
 always @(posedge clk) begin
 
-  // First stage
-  sign_bits    <= {X[0][4], X[1][4], X[2][4], X[3][4], X[4][4], X[5][4]};
-  parity_bit   <= X[0][5] ^ X[1][5] ^ X[2][5] ^ X[3][5] ^ X[4][5] ^ X[5][5];
-  sign_xor_bit <= X[0][4] ^ X[1][4] ^ X[2][4] ^ X[3][4] ^ X[4][4] ^ X[5][4];
-  sum_regs[0]  <= wire8; 
-  sum_regs[1]  <= {2'b00, X[0][3:0]};
-  sum_regs[2]  <= wire7;
-  sum_regs[3]  <= wire1;
-  sum_regs[4]  <= wire6;
-  sum_regs[5]  <= wire2; 
-  sum_regs[6]  <= wire5;
-  sum_regs[7]  <= wire3;
-  sum_regs[8]  <= {2'b00, X[5][3:0]};
-  sum_regs[9]  <= wire4;
+  if(en == 1'b1) begin
+    // First stage
+    sign_bits    <= {X[0][4], X[1][4], X[2][4], X[3][4], X[4][4], X[5][4]};
+    parity_bit   <= X[0][5] ^ X[1][5] ^ X[2][5] ^ X[3][5] ^ X[4][5] ^ X[5][5];
+    sign_xor_bit <= X[0][4] ^ X[1][4] ^ X[2][4] ^ X[3][4] ^ X[4][4] ^ X[5][4];
+    sum_regs[0]  <= wire8; 
+    sum_regs[1]  <= {2'b00, X[0][3:0]};
+    sum_regs[2]  <= wire7;
+    sum_regs[3]  <= wire1;
+    sum_regs[4]  <= wire6;
+    sum_regs[5]  <= wire2; 
+    sum_regs[6]  <= wire5;
+    sum_regs[7]  <= wire3;
+    sum_regs[8]  <= {2'b00, X[5][3:0]};
+    sum_regs[9]  <= wire4;
+  end
 
 end
 

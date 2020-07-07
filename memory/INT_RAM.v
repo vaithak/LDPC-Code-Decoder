@@ -1,7 +1,6 @@
- //----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 // Design Name : INT_RAM
 // File Name  : INT_RAM.v
-// Function  : Single port Synchronous read and write RAMs to store Intrinsic Messages
 //-----------------------------------------------------------------------------------
 
 module INT_RAM 
@@ -11,20 +10,21 @@ module INT_RAM
   parameter RAM_DEPTH  = 1 << ADDR_WIDTH
 )
 (
-  input  logic                  clk            , // Clock Input
-  input  wire [ADDR_WIDTH-1:0] address  [0:1]  , // Address Input
-  input  wire [DATA_WIDTH-1:0] data_in  [0:1] , // Data Input
-  output wire  [DATA_WIDTH-1:0] data_out [0:1] , // Data Output
-  input  logic                  we       [0:1] , // Write Enable
-  input  logic                  cs       [0:1] , // Chip select
-  input  logic                  rs               // RAM Select
+  input wire [ADDR_WIDTH-1:0] address        , // Address Input
+  input wire [DATA_WIDTH-1:0] data_in  [0:1] , // Data Input
+
+  input logic [1:0] we , // Write Enable
+  input logic [1:0] cs , // Chip select
+  input logic clk      , // Clock Input
+
+  output wire [DATA_WIDTH-1:0] data_out [0:1] // Data Output
 );
   RAM_SP_SR_RW #(DATA_WIDTH, ADDR_WIDTH, RAM_DEPTH) int_ram_1
   (
     .clk      (clk),
     .data_in  (data_in  [0]),
     .data_out (data_out [0]),
-    .address  (address  [0]),
+    .address  (address),
     .we       (we       [0]),
     .cs       (cs       [0])
   );
@@ -33,7 +33,7 @@ module INT_RAM
     .clk      (clk),
     .data_in  (data_in  [1]),
     .data_out (data_out [1]),
-    .address  (address  [1]),
+    .address  (address),
     .we       (we       [1]),
     .cs       (cs       [1])
   );

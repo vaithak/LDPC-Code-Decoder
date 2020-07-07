@@ -10,6 +10,9 @@ module VNU (
   // Input clock signal
   input clk,
 
+  // Enable port
+  input en,
+
   // 3 output 6-bit data to send back to CNU's
   output reg [6-1 : 0] Y [0 : 3-1],
   
@@ -64,24 +67,26 @@ LUT lut_3(.X(wire6_2[5:0]), .Y(wire9_2));
 
 always @(posedge clk) begin
 
-  // First stage from top in the diagram
-  sum_regs[0]  <= Z; 
-  sum_regs[1]  <= wire8;
-  sum_regs[2]  <= wire7;
-  sum_regs[3]  <= wire6;
-  sum_regs[4]  <= wire5;
+  if(en == 1'b1) begin
+    // First stage from top in the diagram
+    sum_regs[0]  <= Z; 
+    sum_regs[1]  <= wire8;
+    sum_regs[2]  <= wire7;
+    sum_regs[3]  <= wire6;
+    sum_regs[4]  <= wire5;
 
-  // Second stage
-  if(sum_regs[0][0] == 1) begin
-    hard_decision = 1'b1;
-  end
-  else begin
-    hard_decision = 1'b0;
-  end
+    // Second stage
+    if(sum_regs[0][0] == 1) begin
+      hard_decision = 1'b1;
+    end
+    else begin
+      hard_decision = 1'b0;
+    end
 
-  Y[0] <= {hard_decision, wire4_2[6], wire7_2};
-  Y[1] <= {hard_decision, wire5_2[6], wire8_2};
-  Y[2] <= {hard_decision, wire6_2[6], wire9_2};
+    Y[0] <= {hard_decision, wire4_2[6], wire7_2};
+    Y[1] <= {hard_decision, wire5_2[6], wire8_2};
+    Y[2] <= {hard_decision, wire6_2[6], wire9_2};
+  end
 
 end
 
