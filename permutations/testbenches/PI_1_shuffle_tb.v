@@ -35,7 +35,7 @@ module pi_1_shuffle_tb;
       //compare output from indices 1 to 34 (both included)
       for(int i=1;i<35;i++)begin
         if(data_out[i]!=temp[(6*i)%35]) begin                    //compare with index found according  
-          $display("data_in[%d] not shuffled correctly",temp[i]);//to condition mentioned in the header
+          $display("data_in[%d] not shuffled correctly",i);//to condition mentioned in the header
           #10 $finish;
         end
       end
