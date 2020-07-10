@@ -1,7 +1,9 @@
 /*-------------------------------------------------------------------------------
-This module is a part of VNU which converts the input check-to-variable extrinsic messages
-, which are represented in sign-magnitude format, to two's complement format to perform 
-additions on them.
+This module converts the input, represented in sign-magnitude format, to two's complement format.
+For example: input = 100110  
+             the first bit of the input being one indicates that it is a negative number.
+             the output in this case will be the negative(two's complement) of 000110 (absolute value of input) which is 111010.
+             output= 111010
 --------------------------------------------------------------------------------*/
 
 module S_to_T #(
