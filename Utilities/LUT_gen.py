@@ -43,5 +43,5 @@ def x_val_to_bin(num: int) -> str:
 for i in range(1<<6):
     curr_x_val = calc_x_val(i)
     curr_Y_val = f(curr_x_val)
-    curr_str = f"6'b{x_val_to_bin(i)}: Y <= 4'b{calc_bits_from_Y_val(curr_Y_val)};  // f({curr_x_val}) = {curr_Y_val} ~ {round_to(curr_Y_val, 0.25)}"
+    curr_str = f"6'b{x_val_to_bin(i)}: Y = 4'b{calc_bits_from_Y_val(curr_Y_val)};  // f({curr_x_val}) = {curr_Y_val} ~ {round_to(curr_Y_val, 0.25)}"
     print(curr_str)
