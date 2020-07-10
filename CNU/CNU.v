@@ -2,7 +2,7 @@
 
 module CNU (
   // 6 input 6-bit data of messages from PE blocks, with leftmost bit for each input is hard decision
-  input [6-1 : 0] X [0 : 6-1],
+  input [6-1 : 0][6-1 : 0] X,
 
   // Input clock signal
   input clk,
@@ -11,7 +11,7 @@ module CNU (
   input en,
 
   // 6 output 5-bit data to send to PE blocks
-  output [5-1 : 0] Y [0 : 6-1],
+  output [6-1 : 0][5-1 : 0] Y,
   
   // Parity bit
   output p_bit

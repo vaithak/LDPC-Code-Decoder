@@ -2,7 +2,7 @@
 
 module VNU (
   // 3 input 5-bit data of messages from CNU, with leftmost bit for each input is the sign bit
-  input [5-1 : 0] X [0 : 3-1],
+  input [3-1: 0][5-1 : 0] X,
 
   // 5-bit input from Intrinsic RAM
   input [5-1 : 0] Z,
@@ -14,7 +14,7 @@ module VNU (
   input en,
 
   // 3 output 6-bit data to send back to CNU's
-  output reg [6-1 : 0] Y [0 : 3-1],
+  output reg [3-1:0][6-1 : 0] Y,
   
   // Hard Decision
   output reg hard_decision
