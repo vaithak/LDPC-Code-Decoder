@@ -3,11 +3,11 @@
 // Y: 4 bits, 2 integer: 2 fractional, thus can be quantized at 0.25
 
 module LUT (
-  input logic [6-1 : 0] X,
-  output logic [4-1 : 0] Y
+  input [6-1 : 0] X,
+  output reg [4-1 : 0] Y
 );
 
-always_comb begin
+always@ (X) begin
   case (X)
     6'b000000: Y = 4'b1111;  // f(0.0) = 3.75 ~ 3.75
     6'b000001: Y = 4'b1110;  // f(0.0625) = 3.4660613494787524 ~ 3.5
