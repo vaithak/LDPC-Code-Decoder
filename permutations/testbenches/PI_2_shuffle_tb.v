@@ -2,7 +2,6 @@
 /*
 Here, random 6 bit number is sent as input whose value is then compared with the output
 which is connected to that input according to the condition of Pi 2 shuffle
-each 
 */
 module pi_2_shuffle_tb;
   reg [6-1 : 0] data_in [0 : 35];
