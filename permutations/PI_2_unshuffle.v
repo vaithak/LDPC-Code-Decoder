@@ -1,17 +1,26 @@
 // This file is generated from a python script, do not edit it by hand.
 
 /*
- Inputs from CNU and unshuffled to PE blocks 
+This module takes k*k(k=6) inputs from CNU and unshuffles to PE blocks such that each CNU is connected to 6 PE(x,y) with the same y-index
+Inputs from index 0 to 5 are from one CNU, 6 to 11 from the next CNU and so on.
+Output index assigned to PE (x,y) in column_major order => PE (1, 1) , PE(2, 1), ...
+So outputs 0-5 will have same y-index, hence one CNU (inputs from index 30 to 35) will be connected to these outputs
+Similarly, one CNU (inputs from index 24 to 29) will be connected to output indices 6-11
+and so on.
 */
 
 module PI_2_unshuffle #(
      parameter DATA_WIDTH = 6
 )
+   //port declaration
 (
+   //input port 
     input wire [DATA_WIDTH-1 : 0] data_in [0 : 36-1],
+  
+   //output port
     output wire [DATA_WIDTH-1 : 0] data_out [0 : 36-1]
 );
-
+  //assignment is done such that each CNU is connected to PE blocks with same x-index
 assign data_out[30] = data_in[0];
 assign data_out[31] = data_in[1];
 assign data_out[32] = data_in[2];
