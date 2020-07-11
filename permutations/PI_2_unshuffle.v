@@ -20,7 +20,7 @@ module PI_2_unshuffle #(
    //output port
     output wire [DATA_WIDTH-1 : 0] data_out [0 : 36-1]
 );
-  //assignment is done such that each CNU is connected to PE blocks with same x-index
+  //assignment is done such that each CNU is connected to PE blocks with same y-index
 assign data_out[30] = data_in[0];
 assign data_out[31] = data_in[1];
 assign data_out[32] = data_in[2];
