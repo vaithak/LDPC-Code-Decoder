@@ -4,8 +4,8 @@
 This module shuffles the k*k (k=6) inputs from the PE blocks among the 6 CNU's such that the k PE(x,y) with the same y-index are connected to the same CNU. 
 Output from index 0 to 5 is connected to one CNU, 6 to 11 to the next CNU and so on.
 Inputs from PE (x,y) in column_major order => PE (1, 1) , PE(2, 1), ...
-So inputs 0,1,2... will have same y-index, hence will be conneted to the same CNU (outputs from index 30 to 35)
-Similarly, 6,7,8... will be connected to same CNU (outputs from index 24 to 29) ...and so on. 
+So inputs 0-5 will have same y-index, hence will be conneted to the same CNU (outputs from index 30 to 35)
+Similarly, 6-11 will be connected to same CNU (outputs from index 24 to 29) ...and so on. 
 */
 
 module PI_2_shuffle #(
