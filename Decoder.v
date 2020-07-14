@@ -165,8 +165,8 @@ PI_2_unshuffle #(.DATA_WIDTH(CNU_DATA_OUT_WIDTH)) pi_2_unshuffle (.data_in(PI_2_
 
 
 // CNU 3,j
-PI_3_shuffle #(.DATA_WIDTH(CNU_DATA_IN_WIDTH)) pi_3_shuffle (.data_in(PI_3_shuffle_in), .data_out(PI_3_shuffle_out));
-PI_3_shuffle #(.DATA_WIDTH(1)) pi_3_shuffle_en (.data_in(PI_3_shuffle_en_cnu_in), .data_out(PI_3_shuffle_en_cnu_out));
+PI_3_shuffle #(.DATA_WIDTH(CNU_DATA_IN_WIDTH)) pi_3_shuffle (.data_in(PI_3_shuffle_in), .clk(clk), .reset(~(CNU_3_en[0] | CNU_3_en[1] | CNU_3_en[2] | CNU_3_en[3] | CNU_3_en[4] | CNU_3_en[5])), .data_out(PI_3_shuffle_out));
+PI_3_shuffle #(.DATA_WIDTH(1)) pi_3_shuffle_en (.data_in(PI_3_shuffle_en_cnu_in), .clk(clk), .reset(~(CNU_3_en[0] | CNU_3_en[1] | CNU_3_en[2] | CNU_3_en[3] | CNU_3_en[4] | CNU_3_en[5])), .data_out(PI_3_shuffle_en_cnu_out));
 
 generate
   for(i=0; i<K; i=i+1) begin
@@ -181,7 +181,7 @@ generate
   end
 endgenerate
 
-PI_3_unshuffle #(.DATA_WIDTH(CNU_DATA_OUT_WIDTH)) pi_3_unshuffle (.data_in(PI_3_unshuffle_in), .data_out(PI_3_unshuffle_out));
+PI_3_unshuffle #(.DATA_WIDTH(CNU_DATA_OUT_WIDTH)) pi_3_unshuffle (.data_in(PI_3_unshuffle_in), .clk(clk), .reset(~(CNU_3_en[0] | CNU_3_en[1] | CNU_3_en[2] | CNU_3_en[3] | CNU_3_en[4] | CNU_3_en[5])), .data_out(PI_3_unshuffle_out));
 
 
 
