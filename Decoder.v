@@ -36,8 +36,10 @@ module LDPC_Decoder
   input clk,
   input clk_df,
   input en,      // enable pin
+  output logic f_id,
 
-  input [(K*K)-1:0] pe_select,       // Will be used in row major order
+  input logic [K-1:0] column_select,
+  input [(K*K)-1:0] pe_select,       // Will be used in column major order
   input [MESSAGE_WIDTH-1:0] int_in,
   input [ADDR_WIDTH-1:0] load_add_in,
   input [ADDR_WIDTH-1:0] read_add_in,
@@ -196,10 +198,12 @@ generate
       // (i, j) PE_block with i and j being 0-indexed
       PE_BLOCK #(.X(i+1), .Y(j+1), .K(K), .L(L), .ADDR_WIDTH(ADDR_WIDTH)) pe_block
       (
-        .en(en),
+        .enable(en),
         .clk(clk),
         .clk_df(clk_df),
-        .pe_select(pe_select[i*K + j]),
+        .f_id(f_id),
+        .pe_select(pe_select[i + j*K]),
+        .column_select(column_select[j]),
 
         .read_add_in(read_add_out[i + K*j]),
         .read_add_out(read_add_out[i + K*(j+1)]),
