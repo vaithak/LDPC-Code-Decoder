@@ -26,6 +26,8 @@ module Decoder_tb ();
   logic clk_df;
   logic en;
   logic f_id;
+  logic prev_f_id;
+  logic relay;
   logic [K-1:0] column_select;
   logic [(K*K)-1:0] pe_select;
   logic [MESSAGE_WIDTH-1:0] int_in;
@@ -54,7 +56,8 @@ module Decoder_tb ();
   .pe_select(pe_select),
   .int_in(int_in),
   .load_add_in(load_add_in),
-  .read_add_in(read_add_in)
+  .read_add_in(read_add_in),
+  .relay(relay)
   );
 
 
@@ -85,56 +88,71 @@ module Decoder_tb ();
       $display("\nFrame number: %0d",frame);
       for(int i=0; i<DATA_COUNT; i=i+1) begin
         scan_faults = $fscanf(inp_fd, "%b", int_data[i]);
-        $display("data: %b", int_data[i]);
+        //$display("data: %b", int_data[i]);
       end
       en=1'b1;
       prev_f_id=f_id;
       flag=1;
       while(flag) begin
-        @(posedge clk); 
+        $display("Count = %d",count);
+        //$display("relay = %b",relay);
+        //$display("prev_f_id = %b\n",prev_f_id);
+        
+        @(negedge clk); 
         if((count/L)<(K*K)) begin
           pe_select[count/L]=1'b1;
           int_in=int_data[count];
           load_add_in=count%L;        
         end
-        
-        #2;
         if((count/K)<L) begin
           read_add_in=count/K;
           column_select[count%K]=1'b1;          
         end
       
-        if(f_id!=prev_f_id) begin
-          en=1'b0;
-          column_select=6'b0;
-          pe_select=36'b0;
-          count=0;
-          falg=0;
 
-        end
 
-        @(negedge clk);
-        count=count+1;
-        prev_f_id=f_id;
+        @(posedge clk);
+        @(posedge clk_df);
+        #1;
 
-        if(count%K==0 && count!=0 && ((count-1)/K)<L) begin
+        if(count%K==(K-1) && (count/K)<L) begin
           for(int x=0; x<K; x=x+1) begin
             for(int y=0; y<K; y=y+1) begin
-              hard_dec[(L*K*y)+(L*x)+((count-1)/K)]=dec_out_fin[x][y];
+              hard_dec[L*x + y  ]=dec_out_fin[x][y];
             end
           end
         end
 
+        if(f_id!=prev_f_id) begin
+          flag=0;
+        end
+
+        count=count+1;
+
+        //(L*K*y)+(L*x)+((count-1)/K)
+
       end
 
-      for(int j=0; j<(L*K*K); j=j+1) begin
-        $fwrite(out_fd, "%b\n", hard_dec[j]);
+      
+      column_select=6'b0;
+      pe_select=36'b0;
+      count=0;
+
+      if(frame!=1 && frame!=2 ) begin
+        for(int j=0; j<(L*K*K); j=j+1) begin
+          $fwrite(out_fd, "%b", hard_dec[j]);
+        end
+        $fwrite(out_fd, "\n");
       end
+
+      
     
     end
 
     $fclose(inp_fd);
     $fclose(out_fd);
+
+    $finish;
 
 
     // Writing decoded data to file, assumes that the data for current frame is in 
@@ -143,15 +161,15 @@ module Decoder_tb ();
 
   initial begin
     clk<=0;
-    clk_df<=1;
+    clk_df<=0;
   end
   
   always begin
-    #4 clk=~clk; 
+    #2 clk <= ~clk; 
   end
 
   always begin
-    #2 clk_df= ~clk_df;
+    #1 clk_df <= ~clk_df;
   end
 
 

@@ -21,6 +21,12 @@
 `include "VNU/VNU.v"
 
 `include "PE_block/PE_block.v"
+`include "memory/INT_RAM.v"
+`include "memory/EXT_RAM.v"
+`include "memory/DEC_RAM.v"
+`include "memory/RAM_SP_SR_RW.v"
+`include "address_generator/ADDRESS_GENERATOR.v"
+
 
 module LDPC_Decoder
 #(
@@ -36,7 +42,8 @@ module LDPC_Decoder
   input clk,
   input clk_df,
   input en,      // enable pin
-  output logic f_id,
+  output wire f_id,
+  output wire relay,
 
   input logic [K-1:0] column_select,
   input [(K*K)-1:0] pe_select,       // Will be used in column major order
@@ -47,7 +54,7 @@ module LDPC_Decoder
   output [K-1:0] dec_out_fin [K-1:0]
 );
 
-// reg parity_bit;
+parameter RAM_DEPTH =1<<ADDR_WIDTH ;
 
 
 // Wires for Data I/O at PE bloks
@@ -122,6 +129,12 @@ wire [CNU_DATA_OUT_WIDTH-1:0] PI_3_unshuffle_out[0:(K*K)-1];
 
 reg [3*K] p_bit;  // parity bits from all cnu's
 
+wire temp_f_id;
+wire temp_relay;
+
+assign relay=temp_relay;
+
+assign f_id=temp_f_id;
 
 // CNU 1,j
 PI_1_shuffle #(.DATA_WIDTH(CNU_DATA_IN_WIDTH)) pi_1_shuffle (.data_in(PI_1_shuffle_in), .data_out(PI_1_shuffle_out));
@@ -196,14 +209,16 @@ generate
   for(i=0; i<K; i=i+1) begin
     for(j=0; j<K; j=j+1) begin
       // (i, j) PE_block with i and j being 0-indexed
-      PE_BLOCK #(.X(i+1), .Y(j+1), .K(K), .L(L), .ADDR_WIDTH(ADDR_WIDTH)) pe_block
+      PE_BLOCK #(.X(i+1), .Y(j+1), .K(K), .L(L),
+                 .COUNT_FROM_1(0), .COUNT_FROM_2((i*(j+1))%L), .COUNT_FROM_3(((i+1)*(j+2))%L)) pe_block
       (
         .enable(en),
         .clk(clk),
         .clk_df(clk_df),
-        .f_id(f_id),
+        .f_id(temp_f_id),
         .pe_select(pe_select[i + j*K]),
         .column_select(column_select[j]),
+        .relay(temp_relay),
 
         .read_add_in(read_add_out[i + K*j]),
         .read_add_out(read_add_out[i + K*(j+1)]),
