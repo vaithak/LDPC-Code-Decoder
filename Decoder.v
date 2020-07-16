@@ -50,6 +50,7 @@ module LDPC_Decoder
   input [MESSAGE_WIDTH-1:0] int_in,
   input [ADDR_WIDTH-1:0] load_add_in,
   input [ADDR_WIDTH-1:0] read_add_in,
+  input logic reset, 
 
   output [K-1:0] dec_out_fin [K-1:0]
 );
@@ -219,6 +220,7 @@ generate
         .pe_select(pe_select[i + j*K]),
         .column_select(column_select[j]),
         .relay(temp_relay),
+        .reset(reset),
 
         .read_add_in(read_add_out[i + K*j]),
         .read_add_out(read_add_out[i + K*(j+1)]),

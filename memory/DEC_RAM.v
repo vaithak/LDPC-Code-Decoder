@@ -16,7 +16,8 @@ module DEC_RAM
   input  logic [DATA_WIDTH-1:0] data_in  [0:1] , // Data Input
   input  logic                  we       [0:1] , // Write Enable
   input  logic                  cs       [0:1] , // Chip select
-  output  wire [DATA_WIDTH-1:0] data_out [0:1]   // Data Output
+  output  wire [DATA_WIDTH-1:0] data_out [0:1] ,  // Data Output
+  input  logic                  reset    
 );
 
 RAM_SP_SR_RW #(DATA_WIDTH, ADDR_WIDTH, RAM_DEPTH) dec_ram_1
@@ -26,7 +27,8 @@ RAM_SP_SR_RW #(DATA_WIDTH, ADDR_WIDTH, RAM_DEPTH) dec_ram_1
   .data_out (data_out [0]),
   .address  (address  [0]),
   .we       (we       [0]),
-  .cs       (cs       [0])
+  .cs       (cs       [0]),
+  .reset    (reset)
 );
 
 RAM_SP_SR_RW #(DATA_WIDTH, ADDR_WIDTH, RAM_DEPTH) dec_ram_2
@@ -36,7 +38,8 @@ RAM_SP_SR_RW #(DATA_WIDTH, ADDR_WIDTH, RAM_DEPTH) dec_ram_2
   .data_out (data_out [1]),
   .address  (address  [1]),
   .we       (we       [1]),
-  .cs       (cs       [1])
+  .cs       (cs       [1]),
+  .reset    (reset)
 );
 
 endmodule

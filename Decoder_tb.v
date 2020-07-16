@@ -28,6 +28,7 @@ module Decoder_tb ();
   logic f_id;
   logic prev_f_id;
   logic relay;
+  logic reset;
   logic [K-1:0] column_select;
   logic [(K*K)-1:0] pe_select;
   logic [MESSAGE_WIDTH-1:0] int_in;
@@ -57,7 +58,8 @@ module Decoder_tb ();
   .int_in(int_in),
   .load_add_in(load_add_in),
   .read_add_in(read_add_in),
-  .relay(relay)
+  .relay(relay),
+  .reset(reset)
   );
 
 
@@ -81,6 +83,7 @@ module Decoder_tb ();
     out_fd = $fopen(out_file_name);
     
     en=1'b0;
+    reset=1'b1;
     @(posedge clk);
 
 
@@ -90,12 +93,13 @@ module Decoder_tb ();
         scan_faults = $fscanf(inp_fd, "%b", int_data[i]);
         //$display("data: %b", int_data[i]);
       end
+      reset=1'b0;
       en=1'b1;
       prev_f_id=f_id;
       flag=1;
       while(flag) begin
         $display("Count = %d",count);
-        //$display("relay = %b",relay);
+        $display("relay = %b",relay);
         //$display("prev_f_id = %b\n",prev_f_id);
         
         @(negedge clk); 
@@ -129,7 +133,7 @@ module Decoder_tb ();
 
         count=count+1;
 
-        //(L*K*y)+(L*x)+((count-1)/K)
+        //(L*K*y)+(L*x)+((count)/K)
 
       end
 

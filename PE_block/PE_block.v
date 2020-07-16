@@ -28,6 +28,8 @@ module PE_BLOCK
 
   output logic                     enable_cnu,        //CNU enable pin
 
+  input  logic                     reset,
+
   output wire                     f_id,              //frame id
   output wire       relay,
   input  logic                     pe_select,         //PE_Block select line    
@@ -99,7 +101,7 @@ logic [ADDR_WIDTH-1:0]      write_add_vnu;             //delayed address to writ
 logic [ADDR_WIDTH-1:0]      read_add_cnu [0:2];
 logic [ADDR_WIDTH-1:0]      read_add_vnu;
 
-logic                       rs          ;             //RAM selct to shift focus between data frames   
+logic                       rs          ;             //RAM select to shift focus between data frames   
 integer                     itr_count      ;             //count the number of iterations
 logic extended;
 logic [ADDR_WIDTH-1:0] mem_reg_add [0:3];
@@ -135,7 +137,8 @@ INT_RAM #(MESSAGE_WIDTH,ADDR_WIDTH,RAM_DEPTH) int_ram
   .data_in  (int_data_in),
   .we       (int_we),
   .cs       (int_cs),
-  .data_out (int_data_out)
+  .data_out (int_data_out),
+  .reset    (reset)
 );
 
 
@@ -149,7 +152,8 @@ generate
       .we       (ext_we),
       .cs       (ext_cs),
       .data_in  (ext_data_in[i]),
-      .data_out (ext_data_out[i])
+      .data_out (ext_data_out[i]),
+      .reset    (reset)
     );
   end
 endgenerate
@@ -162,7 +166,8 @@ DEC_RAM #(DECISION_WIDTH,ADDR_WIDTH,RAM_DEPTH) dec_ram
   .data_in  (dec_data_in),
   .we       (dec_we),
   .cs       (dec_cs),
-  .data_out (dec_data_out)
+  .data_out (dec_data_out),
+  .reset    (reset)
 );
 
 
@@ -258,7 +263,7 @@ always @(enable) begin
 
   if(enable) begin
     ag_reset=1'b0;
-    vnu_en=1'b0;
+    vnu_en=1'b1;
   end
   else begin
     ag_reset=1'b1;
