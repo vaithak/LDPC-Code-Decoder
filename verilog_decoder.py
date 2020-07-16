@@ -1,5 +1,6 @@
 # Python wrapper for testing verilog module of LDPC Decoder
 import numpy as np
+import os
 
 def get_H():
     return np.load("permutations/H_np_array.npy")
@@ -84,7 +85,19 @@ def decode(H, codeword, snr, file="inp.txt"):
         curr_frame = codeword[:,col]
         write_frame_to_file(L, K, curr_frame, file_obj, snr)
         file_obj.write("\n")
+
+    dummy=np.zeros(codeword.shape[0])
+    write_frame_to_file(L,K,dummy,file_obj,snr)
+    file_obj.write("\n")
+    write_frame_to_file(L,K,dummy,file_obj,snr)
+    number_of_codeframes=codeword.shape[1]+2
+
     file_obj.close()
+
+    os.system("iverilog -g2012 -o test Decoder_tb.v")
+    s="vvp test +FRAMES="+str(number_of_codeframes)
+    os.system(s)
+
 
     return None
 
