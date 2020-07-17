@@ -11,10 +11,10 @@ module PI_1_shuffle #(
   //port declaration
 (
   //input port  
-    input wire [DATA_WIDTH-1 : 0] data_in [0 : 36-1],
+    input wire [36-1:0] [DATA_WIDTH-1 : 0] data_in ,
   
   //output port
-    output wire [DATA_WIDTH-1 : 0] data_out [0 : 36-1]
+    output wire [36-1:0] [DATA_WIDTH-1 : 0] data_out 
 );
  //assignment is done such that each CNU is connected to PE blocks with same x-index
 assign data_out[0] = data_in[0];

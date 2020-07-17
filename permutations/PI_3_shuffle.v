@@ -9,10 +9,10 @@ module PI_3_shuffle #(
     parameter START_STATE = 0
 )
 (
-    input wire [DATA_WIDTH-1 : 0] data_in [0 : 36-1],
+    input wire [36-1:0] [DATA_WIDTH-1 : 0] data_in ,
     input wire clk,
     input wire reset,
-    output reg [DATA_WIDTH-1 : 0] data_out [0 : 36-1]
+    output reg [36-1:0] [DATA_WIDTH-1 : 0] data_out 
 );
 
 reg [4 : 0] state;

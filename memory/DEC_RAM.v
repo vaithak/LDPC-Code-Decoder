@@ -12,11 +12,11 @@ module DEC_RAM
 )
 (
   input  logic                  clk            , // Clock Input
-  input  logic [ADDR_WIDTH-1:0] address  [0:1] , // Address Input
-  input  logic [DATA_WIDTH-1:0] data_in  [0:1] , // Data Input
-  input  logic                  we       [0:1] , // Write Enable
-  input  logic                  cs       [0:1] , // Chip select
-  output  wire [DATA_WIDTH-1:0] data_out [0:1] ,  // Data Output
+  input  logic [1:0][ADDR_WIDTH-1:0] address   , // Address Input
+  input  logic [1:0][DATA_WIDTH-1:0] data_in   , // Data Input
+  input  logic      [1:0]       we        , // Write Enable
+  input  logic      [1:0]       cs        , // Chip select
+  output  wire [1:0][DATA_WIDTH-1:0] data_out  ,  // Data Output
   input  logic                  reset    
 );
 

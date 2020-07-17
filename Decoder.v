@@ -43,7 +43,8 @@ module LDPC_Decoder
   input clk_df,
   input en,      // enable pin
   output wire f_id,
-  output wire relay,
+  output wire [5:0]relay,
+  input logic ext_reset,
 
   input logic [K-1:0] column_select,
   input [(K*K)-1:0] pe_select,       // Will be used in column major order
@@ -52,18 +53,15 @@ module LDPC_Decoder
   input [ADDR_WIDTH-1:0] read_add_in,
   input logic reset, 
 
-  output [K-1:0] dec_out_fin [K-1:0]
+  output [K-1:0][K-1:0] dec_out_fin 
 );
 
-parameter RAM_DEPTH =1<<ADDR_WIDTH ;
-
-
 // Wires for Data I/O at PE bloks
-wire [ADDR_WIDTH-1:0]    load_add_out [((K+1)*K)-1:0];  // Will be used in row major order
-wire [MESSAGE_WIDTH-1:0] int_out      [((K+1)*K)-1:0];  // Will be used in row major order
+wire [((K+1)*K)-1:0][ADDR_WIDTH-1:0]    load_add_out ;  // Will be used in row major order
+wire [((K+1)*K)-1:0][MESSAGE_WIDTH-1:0] int_out      ;  // Will be used in row major order
 
-wire [ADDR_WIDTH-1:0]    read_add_out [((K+1)*K)-1:0];  // Will be used in col major order
-wire [K-1:0]             dec_out      [((K+1)*K)-1:0];  // Will be used in col major order
+wire [((K+1)*K)-1:0][ADDR_WIDTH-1:0]    read_add_out ;  // Will be used in col major order
+wire [((K+1)*K)-1:0][K-1:0]             dec_out      ;  // Will be used in col major order
 
 generate
   genvar x,y;
@@ -88,50 +86,54 @@ generate
 endgenerate
 
 // Wires and regs for CNU procesing
-wire [CNU_DATA_IN_WIDTH-1:0] PE_out_cnu[0:2][0:(K*K)-1];
-wire en_cnu[0:(K*K)-1];
-reg [CNU_DATA_OUT_WIDTH-1:0] PE_in_cnu[0:2][0:(K*K)-1];
+wire [2:0][(K*K)-1:0][CNU_DATA_IN_WIDTH-1:0] PE_out_cnu;
+wire [(K*K)-1:0]en_cnu;
+reg [2:0][(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PE_in_cnu;
 
-reg [CNU_DATA_IN_WIDTH-1:0] PI_1_shuffle_in[0:(K*K)-1];
-reg [CNU_DATA_IN_WIDTH-1:0] PI_2_shuffle_in[0:(K*K)-1];
-reg [CNU_DATA_IN_WIDTH-1:0] PI_3_shuffle_in[0:(K*K)-1];
+reg [(K*K)-1:0][CNU_DATA_IN_WIDTH-1:0] PI_1_shuffle_in;
+reg [(K*K)-1:0][CNU_DATA_IN_WIDTH-1:0] PI_2_shuffle_in;
+reg [(K*K)-1:0][CNU_DATA_IN_WIDTH-1:0] PI_3_shuffle_in;
 
-wire [CNU_DATA_IN_WIDTH-1:0] PI_1_shuffle_out[0:(K*K)-1];
-wire [CNU_DATA_IN_WIDTH-1:0] PI_2_shuffle_out[0:(K*K)-1];
-wire [CNU_DATA_IN_WIDTH-1:0] PI_3_shuffle_out[0:(K*K)-1];
+wire [(K*K)-1:0][CNU_DATA_IN_WIDTH-1:0] PI_1_shuffle_out;
+wire [(K*K)-1:0][CNU_DATA_IN_WIDTH-1:0] PI_2_shuffle_out;
+wire [(K*K)-1:0][CNU_DATA_IN_WIDTH-1:0] PI_3_shuffle_out;
 
-reg PI_1_shuffle_en_cnu_in[0: (K*K)-1];
-reg PI_2_shuffle_en_cnu_in[0: (K*K)-1];
-reg PI_3_shuffle_en_cnu_in[0: (K*K)-1];
+reg [(K*K)-1:0]PI_1_shuffle_en_cnu_in;
+reg [(K*K)-1:0]PI_2_shuffle_en_cnu_in;
+reg [(K*K)-1:0]PI_3_shuffle_en_cnu_in;
 
-wire PI_1_shuffle_en_cnu_out[0:(K*K)-1];  // permuted enable bits for CNU 1,j
-wire PI_2_shuffle_en_cnu_out[0:(K*K)-1];  // permuted enable bits for CNU 1,j
-wire PI_3_shuffle_en_cnu_out[0:(K*K)-1];  // permuted enable bits for CNU 1,j
+wire [(K*K)-1:0]PI_1_shuffle_en_cnu_out;  // permuted enable bits for CNU 1,j
+wire [(K*K)-1:0]PI_2_shuffle_en_cnu_out;  // permuted enable bits for CNU 1,j
+wire [(K*K)-1:0]PI_3_shuffle_en_cnu_out;  // permuted enable bits for CNU 1,j
 
-reg [CNU_DATA_IN_WIDTH-1:0][0:K-1] CNU_1_in[0:K-1];
-reg [CNU_DATA_IN_WIDTH-1:0][0:K-1] CNU_2_in[0:K-1];
-reg [CNU_DATA_IN_WIDTH-1:0][0:K-1] CNU_3_in[0:K-1];
+reg [K-1:0][K-1:0][CNU_DATA_IN_WIDTH-1:0] CNU_1_in;
+reg [K-1:0][K-1:0][CNU_DATA_IN_WIDTH-1:0] CNU_2_in;
+reg [K-1:0][K-1:0][CNU_DATA_IN_WIDTH-1:0] CNU_3_in;
 
-reg CNU_1_en[0:K-1];
-reg CNU_2_en[0:K-1];
-reg CNU_3_en[0:K-1];
+reg [K-1:0]CNU_1_en;
+reg [K-1:0]CNU_2_en;
+reg [K-1:0]CNU_3_en;
 
-reg [CNU_DATA_OUT_WIDTH-1:0][0:K-1] CNU_1_out[0:K-1];
-reg [CNU_DATA_OUT_WIDTH-1:0][0:K-1] CNU_2_out[0:K-1];
-reg [CNU_DATA_OUT_WIDTH-1:0][0:K-1] CNU_3_out[0:K-1];
+reg [K-1:0][K-1:0][CNU_DATA_OUT_WIDTH-1:0] CNU_1_out;
+reg [K-1:0][K-1:0][CNU_DATA_OUT_WIDTH-1:0] CNU_2_out;
+reg [K-1:0][K-1:0][CNU_DATA_OUT_WIDTH-1:0] CNU_3_out;
 
-reg [CNU_DATA_OUT_WIDTH-1:0] PI_1_unshuffle_in[0:(K*K)-1];
-reg [CNU_DATA_OUT_WIDTH-1:0] PI_2_unshuffle_in[0:(K*K)-1];
-reg [CNU_DATA_OUT_WIDTH-1:0] PI_3_unshuffle_in[0:(K*K)-1];
+reg [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_1_unshuffle_in;
+reg [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_2_unshuffle_in;
+reg [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_3_unshuffle_in;
 
-wire [CNU_DATA_OUT_WIDTH-1:0] PI_1_unshuffle_out[0:(K*K)-1];
-wire [CNU_DATA_OUT_WIDTH-1:0] PI_2_unshuffle_out[0:(K*K)-1];
-wire [CNU_DATA_OUT_WIDTH-1:0] PI_3_unshuffle_out[0:(K*K)-1];
+reg [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_1_unshuffle_in_reg;
+reg [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_2_unshuffle_in_reg;
+reg [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_3_unshuffle_in_reg;
+
+wire [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_1_unshuffle_out;
+wire [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_2_unshuffle_out;
+wire [(K*K)-1:0][CNU_DATA_OUT_WIDTH-1:0] PI_3_unshuffle_out;
 
 reg [3*K] p_bit;  // parity bits from all cnu's
 
 wire temp_f_id;
-wire temp_relay;
+wire [5:0] temp_relay;
 
 assign relay=temp_relay;
 
@@ -221,6 +223,7 @@ generate
         .column_select(column_select[j]),
         .relay(temp_relay),
         .reset(reset),
+        .ext_reset(ext_reset),  
 
         .read_add_in(read_add_out[i + K*j]),
         .read_add_out(read_add_out[i + K*(j+1)]),
@@ -277,13 +280,18 @@ always @(posedge clk) begin
 
   // CNU -> Unshuffle
   for(b=0; b<K; b=b+1) begin
-      PI_1_unshuffle_in[b*K] <= CNU_1_out[b];
-      PI_2_unshuffle_in[b*K] <= CNU_2_out[b];
-      PI_3_unshuffle_in[b*K] <= CNU_3_out[b];
+      PI_1_unshuffle_in_reg[b*K] <= CNU_1_out[b];
+      PI_2_unshuffle_in_reg[b*K] <= CNU_2_out[b];
+      PI_3_unshuffle_in_reg[b*K] <= CNU_3_out[b];
 
       // PI_1_unshuffle_in <= {CNU_1_out[0], CNU_1_out[1], CNU_1_out[2], CNU_1_out[3], CNU_1_out[4], CNU_1_out[5]};
       // PI_2_unshuffle_in <= {CNU_2_out[0], CNU_2_out[1], CNU_2_out[2], CNU_2_out[3], CNU_2_out[4], CNU_2_out[5]};
       // PI_3_unshuffle_in <= {CNU_3_out[0], CNU_3_out[1], CNU_3_out[2], CNU_3_out[3], CNU_3_out[4], CNU_3_out[5]};
+  end
+  for(b=0;b<(K*K);b=b+1) begin
+    PI_1_unshuffle_in[b] <= PI_1_unshuffle_in_reg[b];
+    PI_2_unshuffle_in[b] <= PI_2_unshuffle_in_reg[b];
+    PI_3_unshuffle_in[b] <= PI_3_unshuffle_in_reg[b];
   end
 
   // Unshuffle -> Write
@@ -295,5 +303,8 @@ always @(posedge clk) begin
 
 end
 
+initial begin
+ $monitor("%t\t%b\t%b\t%b",$time,CNU_1_en,CNU_2_en,CNU_3_en);
+end
 
 endmodule : LDPC_Decoder
