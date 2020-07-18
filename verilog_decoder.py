@@ -3,7 +3,8 @@ import numpy as np
 import os
 
 def get_H():
-    return np.load("permutations/H_np_array.npy")
+    return np.load("permutations/H_np_array.npy", allow_pickle = True)
+
 
 
 def round_to(num, target):
@@ -18,7 +19,7 @@ def calc_bits_from_float(num: int) -> str :
     rounded_Y_val = round_to(num, 0.25)
 
     int_val = int(np.floor(rounded_Y_val))
-    
+
     frac_val = rounded_Y_val - int_val
     frac_str = ""
     i = round(100*frac_val)
@@ -30,29 +31,29 @@ def calc_bits_from_float(num: int) -> str :
 
     return ("{0:02b}".format(int_val)) + frac_str
 
-# Function to find two's complement 
-def findTwoscomplement(str): 
-    n = len(str) 
-  
-    # Traverse the string to get first  
-    # '1' from the last of string 
+# Function to find two's complement
+def findTwoscomplement(str):
+    n = len(str)
+
+    # Traverse the string to get first
+    # '1' from the last of string
     i = n - 1
     while(i >= 0):
         if (str[i] == '1'):  break
         i -= 1
-  
-    # Continue traversal after the  
+
+    # Continue traversal after the
     # position of first '1'
     k = i - 1
-    while(k >= 0): 
-        # Just flip the values 
+    while(k >= 0):
+        # Just flip the values
         str = list(str)
         str[k] = '1' if (str[k]=='0') else'0'
-        str = ''.join(str) 
-  
+        str = ''.join(str)
+
         k -= 1
-  
-    # return the modified string 
+
+    # return the modified string
     return str
 
 
@@ -100,4 +101,3 @@ def decode(H, codeword, snr, file="inp.txt"):
 
 
     return None
-

@@ -1,26 +1,17 @@
 // This file is generated from a python script, do not edit it by hand.
 
 /*
-This module shuffles the k*k (k=6) inputs from the PE blocks among the 6 CNU's such that the k PE(x,y) with the same y-index are connected to the same CNU. 
-Output from index 0 to 5 is connected to one CNU, 6 to 11 to the next CNU and so on.
-Inputs from PE (x,y) in column_major order => PE (1, 1) , PE(2, 1), ...
-So inputs 0-5 will have same y-index, hence will be conneted to the same CNU (outputs from index 30 to 35)
-Similarly, 6-11 will be connected to same CNU (outputs from index 24 to 29) ...and so on. 
+ Inputs from PE (x,y) in column_major order => PE (1, 1), PE(2, 1), ... 
 */
 
 module PI_2_shuffle #(
      parameter DATA_WIDTH = 6
 )
-   //port declaration
 (
-   //input port
-  input wire [DATA_WIDTH-1 : 0] data_in [0 : 36-1],
-  
-   //output port
-  output wire [DATA_WIDTH-1 : 0] data_out [0 : 36-1]
+    input wire [DATA_WIDTH-1 : 0] data_in [0 : 36-1],
+    output wire [DATA_WIDTH-1 : 0] data_out [0 : 36-1]
 );
 
-   //assignment is done such that each CNU is connected to PE blocks with same y-index
 assign data_out[0] = data_in[30];
 assign data_out[1] = data_in[31];
 assign data_out[2] = data_in[32];
