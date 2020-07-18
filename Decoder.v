@@ -135,6 +135,7 @@ reg [3*K] p_bit;  // parity bits from all cnu's
 wire temp_f_id;
 wire [5:0] temp_relay;
 
+
 assign relay=temp_relay;
 
 assign f_id=temp_f_id;
@@ -181,8 +182,8 @@ PI_2_unshuffle #(.DATA_WIDTH(CNU_DATA_OUT_WIDTH)) pi_2_unshuffle (.data_in(PI_2_
 
 
 // CNU 3,j
-PI_3_shuffle #(.DATA_WIDTH(CNU_DATA_IN_WIDTH)) pi_3_shuffle (.data_in(PI_3_shuffle_in), .clk(clk), .reset(~(CNU_3_en[0] | CNU_3_en[1] | CNU_3_en[2] | CNU_3_en[3] | CNU_3_en[4] | CNU_3_en[5])), .data_out(PI_3_shuffle_out));
-PI_3_shuffle #(.DATA_WIDTH(1)) pi_3_shuffle_en (.data_in(PI_3_shuffle_en_cnu_in), .clk(clk), .reset(~(CNU_3_en[0] | CNU_3_en[1] | CNU_3_en[2] | CNU_3_en[3] | CNU_3_en[4] | CNU_3_en[5])), .data_out(PI_3_shuffle_en_cnu_out));
+PI_3_shuffle #(.DATA_WIDTH(CNU_DATA_IN_WIDTH)) pi_3_shuffle (.data_in(PI_3_shuffle_in), .clk(clk), .reset(~(|en_cnu)), .data_out(PI_3_shuffle_out));
+PI_3_shuffle #(.DATA_WIDTH(1)) pi_3_shuffle_en (.data_in(PI_3_shuffle_en_cnu_in), .clk(clk), .reset(~(|en_cnu)), .data_out(PI_3_shuffle_en_cnu_out));
 
 generate
   for(i=0; i<K; i=i+1) begin
@@ -197,7 +198,7 @@ generate
   end
 endgenerate
 
-PI_3_unshuffle #(.DATA_WIDTH(CNU_DATA_OUT_WIDTH)) pi_3_unshuffle (.data_in(PI_3_unshuffle_in), .clk(clk), .reset(~(CNU_3_en[0] | CNU_3_en[1] | CNU_3_en[2] | CNU_3_en[3] | CNU_3_en[4] | CNU_3_en[5])), .data_out(PI_3_unshuffle_out));
+PI_3_unshuffle #(.DATA_WIDTH(CNU_DATA_OUT_WIDTH)) pi_3_unshuffle (.data_in(PI_3_unshuffle_in), .clk(clk), .reset(~(|en_cnu)), .data_out(PI_3_unshuffle_out));
 
 
 
@@ -209,7 +210,7 @@ generate
   genvar load_add_prev, load_add_in_curr;
 
   // Generating first row of PE_blocks
-  for(i=0; i<K; i=i+1) begin
+  for(i=0; i<K; i=i+1) begin  
     for(j=0; j<K; j=j+1) begin
       // (i, j) PE_block with i and j being 0-indexed
       PE_BLOCK #(.X(i+1), .Y(j+1), .K(K), .L(L),
@@ -224,6 +225,7 @@ generate
         .relay(temp_relay),
         .reset(reset),
         .ext_reset(ext_reset),  
+
 
         .read_add_in(read_add_out[i + K*j]),
         .read_add_out(read_add_out[i + K*(j+1)]),
@@ -279,10 +281,11 @@ always @(posedge clk) begin
 
 
   // CNU -> Unshuffle
-  for(b=0; b<K; b=b+1) begin
-      PI_1_unshuffle_in_reg[b*K] <= CNU_1_out[b];
-      PI_2_unshuffle_in_reg[b*K] <= CNU_2_out[b];
-      PI_3_unshuffle_in_reg[b*K] <= CNU_3_out[b];
+  PI_1_unshuffle_in_reg <= CNU_1_out;
+  PI_2_unshuffle_in_reg <= CNU_2_out;
+  PI_3_unshuffle_in_reg <= CNU_3_out;
+  for(b=0; b<(K*K); b=b+1) begin
+
 
       // PI_1_unshuffle_in <= {CNU_1_out[0], CNU_1_out[1], CNU_1_out[2], CNU_1_out[3], CNU_1_out[4], CNU_1_out[5]};
       // PI_2_unshuffle_in <= {CNU_2_out[0], CNU_2_out[1], CNU_2_out[2], CNU_2_out[3], CNU_2_out[4], CNU_2_out[5]};
@@ -303,8 +306,5 @@ always @(posedge clk) begin
 
 end
 
-initial begin
- $monitor("%t\t%b\t%b\t%b",$time,CNU_1_en,CNU_2_en,CNU_3_en);
-end
 
 endmodule : LDPC_Decoder

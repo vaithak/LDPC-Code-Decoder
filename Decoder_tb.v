@@ -1,4 +1,6 @@
+`timescale 1ms/1ns
 // Testbench for LDPC_Decoder module
+
 `include "Decoder.v"
 
 module Decoder_tb ();
@@ -68,15 +70,15 @@ module Decoder_tb ();
   initial begin
     // Taking arguments from the command line
     if ($value$plusargs("FRAMES=%0d", code_frames) | 1'b1) begin 
-      $display("Number of frames = %0d", code_frames);
+      //$display("Number of frames = %0d", code_frames);
     end
 
     if ($value$plusargs("INP_FILE=%s", inp_file_name) | 1'b1) begin 
-      $display("Input file = %s", inp_file_name);
+      //$display("Input file = %s", inp_file_name);
     end
 
     if ($value$plusargs("OUT_FILE=%s", out_file_name) | 1'b1) begin 
-      $display("Output file = %s", out_file_name);
+      //$display("Output file = %s", out_file_name);
     end
 
 
@@ -87,11 +89,11 @@ module Decoder_tb ();
     en=1'b0;
     reset=1'b1;
     repeat(1) @(posedge clk);
-    #1;
+    #0.5;
 
 
     for(int frame=1; frame<=code_frames; frame=frame+1) begin
-      $display("Frame number: %0d",frame);
+     $display("Frame number: %0d",frame);
       for(int i=0; i<DATA_COUNT; i=i+1) begin
         scan_faults = $fscanf(inp_fd, "%b", int_data[i]);
         //$display("data: %b", int_data[i]);
@@ -99,7 +101,7 @@ module Decoder_tb ();
       reset=1'b0;
       ext_reset=1'b1;
       repeat(1) @(posedge clk_df);
-      #1;
+      #0.5;
       ext_reset=1'b0;
       
       en=1'b1;
@@ -125,7 +127,7 @@ module Decoder_tb ();
 
         repeat(1) @(posedge clk);
         repeat(1) @(posedge clk_df);
-        #1;
+        #0.5;
 
         if(count%K==(K-1) && (count/K)<L) begin
           //for(int x=0; x<K; x=x+1) begin
@@ -184,9 +186,9 @@ module Decoder_tb ();
         end
         $fwrite(out_fd, "\n");
       end
-
       
-    
+  
+      
     end
 
     $fclose(inp_fd);
@@ -205,11 +207,11 @@ module Decoder_tb ();
   end
   
   always begin
-    #2 clk <= ~clk; 
+    #1 clk <= ~clk; 
   end
 
   always begin
-    #1 clk_df <= ~clk_df;
+    #0.5 clk_df <= ~clk_df;
   end
 
 

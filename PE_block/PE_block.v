@@ -101,9 +101,9 @@ logic [MESSAGE_WIDTH-1:0] mem_reg_int ;
 logic [2:0][MESSAGE_WIDTH-1:0] mem_reg_extin  ;
 logic [2:0][MESSAGE_WIDTH:0] mem_reg_extout  ;
 
-logic [5:0][ADDR_WIDTH-1:0] mem_reg_add_cnu1;
-logic [5:0][ADDR_WIDTH-1:0] mem_reg_add_cnu2;
-logic [5:0][ADDR_WIDTH-1:0] mem_reg_add_cnu3;
+logic [6:0][ADDR_WIDTH-1:0] mem_reg_add_cnu1;
+logic [6:0][ADDR_WIDTH-1:0] mem_reg_add_cnu2;
+logic [6:0][ADDR_WIDTH-1:0] mem_reg_add_cnu3;
 logic [2:0][MESSAGE_WIDTH-1:0] mem_reg_cnu_extin  ;
 logic [2:0][MESSAGE_WIDTH:0] mem_reg_cnu_extout  ;
 
@@ -116,7 +116,7 @@ initial begin
   rs=1'b0;
   itr_count=0;
   extended=0;
-  //$monitor("%b\t%b\t",ag_out[0],cnu_data_in);
+  //$monitor("%b\t%b\t%b",ag_out[0],vnu_ext_out[0],mem_reg_add[3]);
 
 end
 
@@ -254,18 +254,15 @@ end
 //------------------------------------------------------------------------------
 always @(enable) begin
   ag_en=1'b1;
-
+  ag_reset=1'b1;
   
 
   if(enable) begin
-    ag_reset=1'b0;
     vnu_en=1'b1;
   end
   else begin
-    ag_reset=1'b1;
     vnu_en=1'bz;
   end
-repeat(1) @(posedge clk);
 end
 
 
@@ -275,6 +272,9 @@ end
 
 always @(posedge clk_df) begin
   if(clk && enable && !vnu_en)  begin
+
+      ag_reset=1'b0;
+
       mem_reg_cnu_extout[0] <= ext_data_out[0];
       mem_reg_cnu_extout[1] <= ext_data_out[1];
       mem_reg_cnu_extout[2] <= ext_data_out[2];
@@ -285,18 +285,21 @@ always @(posedge clk_df) begin
       mem_reg_add_cnu1[3] <= mem_reg_add_cnu1[2];
       mem_reg_add_cnu1[4] <= mem_reg_add_cnu1[3];
       mem_reg_add_cnu1[5] <= mem_reg_add_cnu1[4];
+      mem_reg_add_cnu1[6] <= mem_reg_add_cnu1[5];
 
       mem_reg_add_cnu2[1] <= mem_reg_add_cnu2[0];
       mem_reg_add_cnu2[2] <= mem_reg_add_cnu2[1];
       mem_reg_add_cnu2[3] <= mem_reg_add_cnu2[2];
       mem_reg_add_cnu2[4] <= mem_reg_add_cnu2[3];
       mem_reg_add_cnu2[5] <= mem_reg_add_cnu2[4];
+      mem_reg_add_cnu2[6] <= mem_reg_add_cnu2[5];
 
       mem_reg_add_cnu3[1] <= mem_reg_add_cnu3[0];
       mem_reg_add_cnu3[2] <= mem_reg_add_cnu3[1];
       mem_reg_add_cnu3[3] <= mem_reg_add_cnu3[2];
       mem_reg_add_cnu3[4] <= mem_reg_add_cnu3[3];
       mem_reg_add_cnu3[5] <= mem_reg_add_cnu3[4];
+      mem_reg_add_cnu3[6] <= mem_reg_add_cnu3[5];
 
       {mem_reg_cnu_extin[0], mem_reg_cnu_extin[1], mem_reg_cnu_extin[2]} <= cnu_data_in;
 
@@ -323,9 +326,9 @@ always @(posedge clk_df) begin
       cnu_data_out <={ mem_reg_cnu_extout[0], mem_reg_cnu_extout[1], mem_reg_cnu_extout[2]}; 
 
 
-      ext_add[0] <= mem_reg_add_cnu1[5];
-      ext_add[1] <= mem_reg_add_cnu2[5];
-      ext_add[2] <= mem_reg_add_cnu3[5];
+      ext_add[0] <= mem_reg_add_cnu1[6];
+      ext_add[1] <= mem_reg_add_cnu2[6];
+      ext_add[2] <= mem_reg_add_cnu3[6];
       ext_we <= 1'b1;
       ext_cs <= 1'b1;
       ext_data_in[0] <= {1'b0, mem_reg_cnu_extin[0]};
@@ -354,6 +357,9 @@ end
 
 always @(posedge clk_df) begin
   if(clk && enable && vnu_en)  begin
+
+    ag_reset=1'b0;
+
     mem_reg_extin[0] <= ext_data_out[0][4:0];
     mem_reg_extin[1] <= ext_data_out[1][4:0];
     mem_reg_extin[2] <= ext_data_out[2][4:0];
@@ -439,8 +445,6 @@ always @(ag_out[0]) begin
     end
 
     ag_reset=1'b1;
-    @(posedge clk);
-    ag_reset=1'b0;
     vnu_en= ~vnu_en;
     itr_count=itr_count+1;
 
@@ -467,46 +471,51 @@ end
         ag_reset=1;
 
         repeat(1) @(posedge clk);
-        for (int j=0; j<L ; j=j+1) begin
+        for (int p=0; p<L ; p=p+1) begin
           repeat(1) @(negedge clk);
-          int_add[0]=j;
+          int_add[0]=p;
           int_cs[0]=1;
           int_we[0]=1;
-          int_data_in[0]=j;
+          int_data_in[0]=0;
           repeat(1) @(posedge clk);
           #1;
         end
         
         rs=0;
         vnu_en=1;
-        ag_reset=0;
-        repeat(1) @(posedge clk);
+
         
-        wait(vnu_en==0)begin
-          repeat(5) @(posedge clk);
+        wait(itr_count==2)begin
           vnu_en=1'bz;
           ag_reset=1;
-          $display("i\tEXT1\tEXT2\tEXT3");
-          for(int j=0;j<L;j=j+1) begin
+          /*if(X==1 && Y==1) begin
+            $display("i\tEXT1\tEXT2\tEXT3");
+          for(int p=0;p<L;p=p+1) begin
             repeat(1) @(negedge clk_df);
-            ext_add[0]=j;
-            ext_add[1]=j;
-            ext_add[2]=j;
+            ext_add[0]=p;
+            ext_add[1]=p;
+            ext_add[2]=p;
 
             ext_cs=1;
             ext_we=0;
             
             repeat(1) @(posedge clk_df);
             #1;
-            $display("%d\t%b\t%b\t%b",j,ext_data_out[0],ext_data_out[1],ext_data_out[2]);
-              
+            $display("%d\t%b\t%b\t%b",p,ext_data_out[0],ext_data_out[1],ext_data_out[2]);
+            
+                
           end
+          end
+          
         end
         
       end
 
 
 
-    end*/
-
+    end
+initial begin
+  $monitor("%b\t%b\t%b\t%b\t%b\t%b\t%b\t%b\t",ag_out[0],ag_out[1],ag_out[2],cnu_data_in,cnu_data_out,mem_reg_add_cnu1[6],mem_reg_add_cnu2[6],mem_reg_add_cnu3[6]);
+end
+*/
 endmodule

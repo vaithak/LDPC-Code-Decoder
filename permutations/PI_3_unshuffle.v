@@ -6,7 +6,7 @@
 
 module PI_3_unshuffle #(
      parameter DATA_WIDTH = 6,
-    parameter START_STATE = 3
+    parameter START_STATE = 0
 )
 (
     input wire [36-1:0] [DATA_WIDTH-1 : 0] data_in ,
