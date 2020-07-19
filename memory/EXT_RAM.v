@@ -16,7 +16,8 @@ module EXT_RAM
   input  logic                  we       , // Write Enable
   input  logic                  cs       , // Chip select
   input  logic [DATA_WIDTH-1:0] data_in  , // Data Input
-  output  wire [DATA_WIDTH-1:0] data_out  // Data Output
+  output  wire [DATA_WIDTH-1:0] data_out , // Data Output
+  input  logic                  reset
 );
 
 
@@ -27,7 +28,8 @@ module EXT_RAM
     .data_out (data_out),
     .address  (address),
     .we       (we),
-    .cs       (cs)
+    .cs       (cs),
+    .reset    (reset)
   );
 
 endmodule

@@ -15,8 +15,8 @@ module PE_BLOCK
   parameter COUNT_FROM_1=0,
   parameter COUNT_FROM_2=0,
   parameter COUNT_FROM_3=0,
-  parameter VNU_DELAY=3,
-  parameter CNU_DELAY=5,
+  parameter VNU_DELAY=4,
+  parameter CNU_DELAY=6,
   parameter MESSAGE_WIDTH=5,
   parameter DECISION_WIDTH=1
 )
@@ -64,7 +64,7 @@ logic [ADDR_WIDTH-1:0]    ext_add      [0:2];               //address for Extrin
 logic [MESSAGE_WIDTH:0]   ext_data_in  [0:2];               //data input for EXT_RAM
 logic                     ext_we            ;               //write enable for EXT_RAM
 logic                     ext_cs            ;               //chip select for EXT_RAM
-logic [MESSAGE_WIDTH:0]   ext_data_out [0:2];               //data output for EXT_RAM
+logic [2:0][MESSAGE_WIDTH:0]   ext_data_out ;               //data output for EXT_RAM
 
 //------------Decision RAM------------------
 logic [ADDR_WIDTH-1:0]     dec_add      [0:1];              //addresses for Decision RAMs (DEC_RAM)
@@ -75,7 +75,7 @@ logic [DECISION_WIDTH-1:0] dec_data_out [0:1];              //data output for DE
 
 //---------Address Generator-----------------
 logic                       ag_en            ;              //enable for address generator
-logic [ADDR_WIDTH-1:0]      ag_out      [0:2];              //output for address generator
+logic [2:0][ADDR_WIDTH-1:0]      ag_out      ;              //output for address generator
 logic                       ag_reset         ;              //reset for address generator
 
 //-----------------VNU------------------------
@@ -102,17 +102,18 @@ logic [ADDR_WIDTH-1:0]      read_add_vnu;
 logic                       rs          ;             //RAM selct to shift focus between data frames
 integer                     itr_count      ;             //count the number of iterations
 logic extended;
-logic [ADDR_WIDTH-1:0] mem_reg_add [0:3];
+
+logic [3:0][ADDR_WIDTH-1:0] mem_reg_add ;
 logic [DECISION_WIDTH-1:0] mem_reg_dec ;
 logic [MESSAGE_WIDTH-1:0] mem_reg_int ;
-logic [MESSAGE_WIDTH-1:0] mem_reg_extin [0:2] ;
-logic [MESSAGE_WIDTH:0] mem_reg_extout [0:2] ;
+logic [2:0][MESSAGE_WIDTH-1:0] mem_reg_extin  ;
+logic [2:0][MESSAGE_WIDTH:0] mem_reg_extout  ;
 
-logic [ADDR_WIDTH-1:0] mem_reg_add_cnu1[0:5];
-logic [ADDR_WIDTH-1:0] mem_reg_add_cnu2[0:5];
-logic [ADDR_WIDTH-1:0] mem_reg_add_cnu3[0:5];
-logic [MESSAGE_WIDTH-1:0] mem_reg_cnu_extin [0:2] ;
-logic [MESSAGE_WIDTH:0] mem_reg_cnu_extout [0:2] ;
+logic [6:0][ADDR_WIDTH-1:0] mem_reg_add_cnu1;
+logic [6:0][ADDR_WIDTH-1:0] mem_reg_add_cnu2;
+logic [6:0][ADDR_WIDTH-1:0] mem_reg_add_cnu3;
+logic [2:0][MESSAGE_WIDTH-1:0] mem_reg_cnu_extin  ;
+logic [2:0][MESSAGE_WIDTH:0] mem_reg_cnu_extout  ;
 
 
 assign f_id = rs; // rs is RAM select
@@ -122,6 +123,8 @@ initial begin
   rs=1'b0;
   itr_count=0;
   extended=0;
+  //$monitor("%b\t%b\t%b",ag_out[0],vnu_ext_out[0],mem_reg_add[3]);
+
 end
 
 //---------------------------------------------------------------------------
@@ -135,7 +138,8 @@ INT_RAM #(MESSAGE_WIDTH,ADDR_WIDTH,RAM_DEPTH) int_ram
   .data_in  (int_data_in),
   .we       (int_we),
   .cs       (int_cs),
-  .data_out (int_data_out)
+  .data_out (int_data_out),
+  .reset    (reset)
 );
 
 
@@ -149,7 +153,8 @@ generate
       .we       (ext_we),
       .cs       (ext_cs),
       .data_in  (ext_data_in[i]),
-      .data_out (ext_data_out[i])
+      .data_out (ext_data_out[i]),
+      .reset    (ext_reset)
     );
   end
 endgenerate
@@ -162,7 +167,8 @@ DEC_RAM #(DECISION_WIDTH,ADDR_WIDTH,RAM_DEPTH) dec_ram
   .data_in  (dec_data_in),
   .we       (dec_we),
   .cs       (dec_cs),
-  .data_out (dec_data_out)
+  .data_out (dec_data_out),
+  .reset    (reset)
 );
 
 
@@ -212,7 +218,7 @@ assign int_out=int_in;
 
 always @(posedge clk_df) begin
     if(!clk && pe_select) begin
-        int_we[~rs] <= 1'b0;
+        int_we[~rs] <= 1'b1;
         int_cs[~rs] <= 1'b1;
         int_add[~rs] <= load_add_in;
         int_data_in[~rs] <= int_in;
@@ -255,13 +261,13 @@ end
 //------------------------------------------------------------------------------
 always @(enable) begin
   ag_en=1'b1;
+  ag_reset=1'b1;
+
 
   if(enable) begin
-    ag_reset=1'b0;
-    vnu_en=1'b0;
+    vnu_en=1'b1;
   end
   else begin
-    ag_reset=1'b1;
     vnu_en=1'bz;
   end
 end
@@ -273,6 +279,9 @@ end
 
 always @(posedge clk_df) begin
   if(clk && enable && !vnu_en)  begin
+
+      ag_reset=1'b0;
+
       mem_reg_cnu_extout[0] <= ext_data_out[0];
       mem_reg_cnu_extout[1] <= ext_data_out[1];
       mem_reg_cnu_extout[2] <= ext_data_out[2];
@@ -283,22 +292,23 @@ always @(posedge clk_df) begin
       mem_reg_add_cnu1[3] <= mem_reg_add_cnu1[2];
       mem_reg_add_cnu1[4] <= mem_reg_add_cnu1[3];
       mem_reg_add_cnu1[5] <= mem_reg_add_cnu1[4];
+      mem_reg_add_cnu1[6] <= mem_reg_add_cnu1[5];
 
       mem_reg_add_cnu2[1] <= mem_reg_add_cnu2[0];
       mem_reg_add_cnu2[2] <= mem_reg_add_cnu2[1];
       mem_reg_add_cnu2[3] <= mem_reg_add_cnu2[2];
       mem_reg_add_cnu2[4] <= mem_reg_add_cnu2[3];
       mem_reg_add_cnu2[5] <= mem_reg_add_cnu2[4];
+      mem_reg_add_cnu2[6] <= mem_reg_add_cnu2[5];
 
       mem_reg_add_cnu3[1] <= mem_reg_add_cnu3[0];
       mem_reg_add_cnu3[2] <= mem_reg_add_cnu3[1];
       mem_reg_add_cnu3[3] <= mem_reg_add_cnu3[2];
       mem_reg_add_cnu3[4] <= mem_reg_add_cnu3[3];
       mem_reg_add_cnu3[5] <= mem_reg_add_cnu3[4];
+      mem_reg_add_cnu3[6] <= mem_reg_add_cnu3[5];
 
-      mem_reg_cnu_extin[0] <= cnu_data_in[0];
-      mem_reg_cnu_extin[1] <= cnu_data_in[1];
-      mem_reg_cnu_extin[2] <= cnu_data_in[2];
+      {mem_reg_cnu_extin[0], mem_reg_cnu_extin[1], mem_reg_cnu_extin[2]} <= cnu_data_in;
 
 
       if(extended) begin
@@ -325,9 +335,9 @@ always @(posedge clk_df) begin
       cnu_data_out[2] <= mem_reg_cnu_extout[2];
 
 
-      ext_add[0] <= mem_reg_add_cnu1[5];
-      ext_add[1] <= mem_reg_add_cnu2[5];
-      ext_add[2] <= mem_reg_add_cnu3[5];
+      ext_add[0] <= mem_reg_add_cnu1[6];
+      ext_add[1] <= mem_reg_add_cnu2[6];
+      ext_add[2] <= mem_reg_add_cnu3[6];
       ext_we <= 1'b1;
       ext_cs <= 1'b1;
       ext_data_in[0] <= {1'b0, mem_reg_cnu_extin[0]};
@@ -427,6 +437,7 @@ end
 //-------------------------------------------------------------------------------------
 always @(ag_out[0]) begin
   if(ag_out[0]== L-1) begin
+    repeat(1) @(posedge clk);
     extended=1'b1;
     if(!vnu_en) begin
       repeat(CNU_DELAY)
@@ -441,9 +452,14 @@ always @(ag_out[0]) begin
     end
 
     ag_reset=1'b1;
-    @(posedge clk);
-    ag_reset=1'b0;
     vnu_en= ~vnu_en;
+    itr_count=itr_count+1;
+
+    if(itr_count==36) begin
+      rs= ~rs;
+      itr_count=0;
+    end
+
     extended=1'b0;
   end
 end
@@ -452,9 +468,6 @@ end
 //-----------------------------------------------------------------------------------------
 //--------------------------Flipping focus on data frames----------------------------------
 //-----------------------------------------------------------------------------------------
-always @(vnu_en) begin
-  itr_count=itr_count+1;
-  //$display("Itr_count = %d\n",itr_count);
 
   if(itr_count==36) begin
     rs= ~rs;
@@ -462,7 +475,11 @@ always @(vnu_en) begin
   end
 
 
+
+
+    end
+initial begin
+  $monitor("%b\t%b\t%b\t%b\t%b\t%b\t%b\t%b\t",ag_out[0],ag_out[1],ag_out[2],cnu_data_in,cnu_data_out,mem_reg_add_cnu1[6],mem_reg_add_cnu2[6],mem_reg_add_cnu3[6]);
 end
-
-
+*/
 endmodule

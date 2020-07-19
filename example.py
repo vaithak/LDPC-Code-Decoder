@@ -166,9 +166,23 @@ t = time()
 eye_decoded = decode_img(G, H, eye_coded, snr, eye_bin.shape)
 t = time() - t
 print("Eye | Decoding time: ", t)
-error_decoded_eye = abs(eye - eye_decoded).mean()
-error_noisy_eye = abs(eye_noisy - eye).mean()
+#error_decoded_eye = abs(eye - eye_decoded).mean()
+#error_noisy_eye = abs(eye_noisy - eye).mean()
 
+titles_eye = ["Original", "Noisy " ,
+              "Decoded "]
+
+all_imgs = [[eye, eye_noisy, eye_decoded]]
+f, axes = plt.subplots(2, 3, figsize=(12, 8))
+for ax_row, titles, img_list, cmap in zip(axes, [titles_eye],
+                                          all_imgs, ["gray", None]):
+    for ax, data, title in zip(ax_row, img_list, titles):
+        ax.imshow(data, cmap=cmap)
+        ax.set_title(title, fontsize=20)
+        ax.set_xticks([])
+        ax.set_yticks([])
+plt.tight_layout()
+plt.show()
 
 ##################################################################
 # With RGB images, we proceed similarly
