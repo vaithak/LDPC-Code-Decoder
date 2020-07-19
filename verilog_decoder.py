@@ -99,18 +99,5 @@ def decode(H, codeword, snr, file="inp.txt"):
     s="vvp test +FRAMES="+str(number_of_codeframes)
     os.system(s)
 
-    out=open("out.txt","r")
-    count=0
-    decoded_frames=np.zeros((codeword.shape[0],codeword.shape[1]),dtype=int)
-    for l in out:
 
-<<<<<<< HEAD
     return None
-=======
-        decoded_frames[:,count]=np.array(list(l.strip()),dtype=int)
-        count+=1
-
-    out.close();
-    return decoded_frames
-
->>>>>>> f0d7b87e954b50bb0743382e3201207c550eb6aa

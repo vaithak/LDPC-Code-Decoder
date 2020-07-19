@@ -21,7 +21,7 @@ module VNU (
 );
 
 // Intermediate registers for pipelining, starting from top in the diagram
-reg [ 5-1 : 0][6-1 : 0] sum_regs ;
+reg [6-1 : 0] sum_regs [0 : 5-1];
 
 // intermediate wires for stage 1
 wire [5-1 : 0] wire1, wire2, wire3, wire4;

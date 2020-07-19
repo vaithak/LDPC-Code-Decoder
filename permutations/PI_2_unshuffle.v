@@ -8,8 +8,8 @@ module PI_2_unshuffle #(
      parameter DATA_WIDTH = 6
 )
 (
-    input wire [36-1:0] [DATA_WIDTH-1 : 0] data_in ,
-    output wire [36-1:0] [DATA_WIDTH-1 : 0] data_out 
+    input wire [DATA_WIDTH-1 : 0] data_in [0 : 36-1],
+    output wire [DATA_WIDTH-1 : 0] data_out [0 : 36-1]
 );
 
 assign data_out[30] = data_in[0];

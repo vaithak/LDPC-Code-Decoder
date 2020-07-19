@@ -13,12 +13,11 @@ module INT_RAM
 )
 (
   input  logic                  clk            , // Clock Input
-  input  logic [1:0][ADDR_WIDTH-1:0] address   , // Address Input
-  input  logic [1:0][DATA_WIDTH-1:0] data_in   , // Data Input
-  input  logic      [1:0]            we        , // Write Enable
-  input  logic      [1:0]            cs        , // Chip select
-  output logic [1:0][DATA_WIDTH-1:0] data_out  , // Data Output
-  input  logic                  reset    
+  input  logic [ADDR_WIDTH-1:0] address  [0:1] , // Address Input
+  input  logic [DATA_WIDTH-1:0] data_in  [0:1] , // Data Input
+  input  logic                  we       [0:1] , // Write Enable
+  input  logic                  cs       [0:1] , // Chip select
+  output  wire [DATA_WIDTH-1:0] data_out [0:1]   // Data Output
 );
 
   RAM_SP_SR_RW #(DATA_WIDTH, ADDR_WIDTH, RAM_DEPTH) int_ram_1
@@ -28,8 +27,7 @@ module INT_RAM
     .data_out (data_out [0]),
     .address  (address  [0]),
     .we       (we       [0]),
-    .cs       (cs       [0]),
-    .reset    (reset)
+    .cs       (cs       [0])
   );
 
   RAM_SP_SR_RW #(DATA_WIDTH, ADDR_WIDTH, RAM_DEPTH) int_ram_2
@@ -39,8 +37,7 @@ module INT_RAM
     .data_out (data_out [1]),
     .address  (address  [1]),
     .we       (we       [1]),
-    .cs       (cs       [1]),
-    .reset    (reset)
+    .cs       (cs       [1])
   );
 
 

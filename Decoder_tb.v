@@ -1,6 +1,4 @@
-`timescale 1ms/1ns
 // Testbench for LDPC_Decoder module
-
 `include "Decoder.v"
 
 module Decoder_tb ();
@@ -23,20 +21,19 @@ module Decoder_tb ();
 
   integer inp_fd;
   integer out_fd;
-  logic ext_reset;
+
   logic clk;
   logic clk_df;
   logic en;
   logic f_id;
   logic prev_f_id;
-  logic [5:0] relay;
-  logic reset;
+  logic relay;
   logic [K-1:0] column_select;
   logic [(K*K)-1:0] pe_select;
   logic [MESSAGE_WIDTH-1:0] int_in;
   logic [ADDR_WIDTH-1:0] load_add_in;
   logic [ADDR_WIDTH-1:0] read_add_in;
-  logic [K-1:0][K-1:0] dec_out_fin ;
+  logic [K-1:0] dec_out_fin [K-1:0];
   logic [(L*K*K)-1:0] hard_dec;
 
   reg [5-1:0] curr_data;
@@ -60,25 +57,22 @@ module Decoder_tb ();
   .int_in(int_in),
   .load_add_in(load_add_in),
   .read_add_in(read_add_in),
-  .relay(relay),
-  .reset(reset),
-  .dec_out_fin(dec_out_fin),
-  .ext_reset(ext_reset)
+  .relay(relay)
   );
 
 
   initial begin
     // Taking arguments from the command line
     if ($value$plusargs("FRAMES=%0d", code_frames) | 1'b1) begin 
-      //$display("Number of frames = %0d", code_frames);
+      $display("Number of frames = %0d", code_frames);
     end
 
     if ($value$plusargs("INP_FILE=%s", inp_file_name) | 1'b1) begin 
-      //$display("Input file = %s", inp_file_name);
+      $display("Input file = %s", inp_file_name);
     end
 
     if ($value$plusargs("OUT_FILE=%s", out_file_name) | 1'b1) begin 
-      //$display("Output file = %s", out_file_name);
+      $display("Output file = %s", out_file_name);
     end
 
 
@@ -87,32 +81,24 @@ module Decoder_tb ();
     out_fd = $fopen(out_file_name);
     
     en=1'b0;
-    reset=1'b1;
-    repeat(1) @(posedge clk);
-    #0.5;
+    @(posedge clk);
 
 
     for(int frame=1; frame<=code_frames; frame=frame+1) begin
-     $display("Frame number: %0d",frame);
+      $display("\nFrame number: %0d",frame);
       for(int i=0; i<DATA_COUNT; i=i+1) begin
         scan_faults = $fscanf(inp_fd, "%b", int_data[i]);
         //$display("data: %b", int_data[i]);
       end
-      reset=1'b0;
-      ext_reset=1'b1;
-      repeat(1) @(posedge clk_df);
-      #0.5;
-      ext_reset=1'b0;
-      
       en=1'b1;
       prev_f_id=f_id;
       flag=1;
       while(flag) begin
-        //$display("Count = %d",count);
+        $display("Count = %d",count);
         //$display("relay = %b",relay);
         //$display("prev_f_id = %b\n",prev_f_id);
         
-        repeat(1) @(negedge clk); 
+        @(negedge clk); 
         if((count/L)<(K*K)) begin
           pe_select[count/L]=1'b1;
           int_in=int_data[count];
@@ -125,44 +111,16 @@ module Decoder_tb ();
       
 
 
-        repeat(1) @(posedge clk);
-        repeat(1) @(posedge clk_df);
-        #0.5;
+        @(posedge clk);
+        @(posedge clk_df);
+        #1;
 
         if(count%K==(K-1) && (count/K)<L) begin
-          //for(int x=0; x<K; x=x+1) begin
-
+          for(int x=0; x<K; x=x+1) begin
             for(int y=0; y<K; y=y+1) begin
-              hard_dec[(L*K*y)+(L*0)+((count)/K) ]=dec_out_fin[0][y];
-              //$display("%b",dec_out_fin[0][y]);
+              hard_dec[L*x + y  ]=dec_out_fin[x][y];
             end
-
-            for(int y=0; y<K; y=y+1) begin
-              hard_dec[(L*K*y)+(L*1)+((count)/K) ]=dec_out_fin[1][y];
-              //$display("%b",dec_out_fin[1][y]);
-            end
-
-            for(int y=0; y<K; y=y+1) begin
-              hard_dec[(L*K*y)+(L*2)+((count)/K) ]=dec_out_fin[2][y];
-              //$display("%b",dec_out_fin[2][y]);
-            end
-
-            for(int y=0; y<K; y=y+1) begin
-              hard_dec[(L*K*y)+(L*3)+((count)/K) ]=dec_out_fin[3][y];
-              //$display("%b",dec_out_fin[3][y]);
-            end
-
-            for(int y=0; y<K; y=y+1) begin
-              hard_dec[(L*K*y)+(L*4)+((count)/K) ]=dec_out_fin[4][y];
-              //$display("%b",dec_out_fin[4][y]);
-            end
-
-            for(int y=0; y<K; y=y+1) begin
-              hard_dec[(L*K*y)+(L*5)+((count)/K) ]=dec_out_fin[5][y];
-              //$display("%b",dec_out_fin[5][y]);
-            end
-
-          //end
+          end
         end
 
         if(f_id!=prev_f_id) begin
@@ -171,7 +129,7 @@ module Decoder_tb ();
 
         count=count+1;
 
-        //(L*K*y)+(L*x)+((count)/K)
+        //(L*K*y)+(L*x)+((count-1)/K)
 
       end
 
@@ -186,9 +144,9 @@ module Decoder_tb ();
         end
         $fwrite(out_fd, "\n");
       end
+
       
-  
-      
+    
     end
 
     $fclose(inp_fd);
@@ -207,11 +165,11 @@ module Decoder_tb ();
   end
   
   always begin
-    #1 clk <= ~clk; 
+    #2 clk <= ~clk; 
   end
 
   always begin
-    #0.5 clk_df <= ~clk_df;
+    #1 clk_df <= ~clk_df;
   end
 
 

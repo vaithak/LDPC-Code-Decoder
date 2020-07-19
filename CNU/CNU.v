@@ -18,7 +18,7 @@ module CNU (
 );
 
 // Intermediate registers for pipelining, starting from left in the diagram
-reg [10-1:0][6-1 : 0] sum_regs ;
+reg [6-1 : 0] sum_regs [0 : 10-1];
 reg [6-1 : 0] sign_bits;
 reg sign_xor_bit;
 reg parity_bit;
