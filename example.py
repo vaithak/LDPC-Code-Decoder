@@ -1,4 +1,4 @@
-# References for this test generation:
+# References for this test generation: 
 # https://dsp.stackexchange.com/questions/42517/gaussian-noise-generation-for-a-given-snr
 # https://github.com/hichamjanati/pyldpc/
 
@@ -21,7 +21,7 @@ import warnings
 from PIL import Image
 import verilog_decoder
 from time import time
-
+    
 
 
 def encode_img(tG, img_bin, snr, seed=None):
